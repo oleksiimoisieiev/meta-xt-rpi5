@@ -1,4 +1,5 @@
-From f832e43ccfb192227037ce593930f0f69904bea4 Mon Sep 17 00:00:00 2001
+From 42f083292a5ab085b842632d73c100817a5499a9 Mon Sep 17 00:00:00 2001
+Message-Id: <42f083292a5ab085b842632d73c100817a5499a9.1721831015.git.oleksii_moisieiev@epam.com>
 From: Volodymyr Babchuk <volodymyr_babchuk@epam.com>
 Date: Wed, 22 May 2024 02:05:23 +0300
 Subject: [PATCH] rpi5: add OP-TEE support
@@ -11,16 +12,19 @@ they can be loaded together by VPU.
 So this patch assumes that OP-TEE image is located right after BL31 at
 address 0x80000. But we can't boot OP-TEE at this address because VPU
 will put kernel right behind OP-TEE image, at 0x200000. It is not
-possible to change kernel load address with `kernel_addr` option in
-config.txt anymore. This means that BL31 should move OP-TEE to empty
-memory region. By default BL31 moves it at the end of 1GB block, but
-this can be changed with BL31_BASE parameter.
+possible to change kernel load address with `kernel_address=` option
+in config.txt anymore. This option was moved to "legacy options" ([1])
+and is not officially supported anymore. That means that BL31 should
+move OP-TEE to an empty memory region. By default BL31 moves it at the
+end of 1GB block, but this can be changed with BL31_BASE parameter.
 
 BL31 will pass DTB address to the OP-TEE, so it will be able to
 reserve memory for itself and provide correct entries in /firmware
 section.
 
 Documentation describes how to attach OP-TEE image to BL31.
+
+[1] https://www.raspberrypi.com/documentation/computers/legacy_config_txt.html#kernel_address
 
 Change-Id: I375ca19e7234053b9d6cee6b644ecc55492d85f2
 Signed-off-by: Volodymyr Babchuk <volodymyr_babchuk@epam.com>
@@ -32,7 +36,7 @@ Signed-off-by: Volodymyr Babchuk <volodymyr_babchuk@epam.com>
  4 files changed, 54 insertions(+)
 
 diff --git a/docs/plat/rpi5.rst b/docs/plat/rpi5.rst
-index f2e1b9f2d..4710ac319 100644
+index f2e1b9f2d..6b03a846d 100644
 --- a/docs/plat/rpi5.rst
 +++ b/docs/plat/rpi5.rst
 @@ -65,6 +65,23 @@ options may be necessary.
@@ -46,7 +50,7 @@ index f2e1b9f2d..4710ac319 100644
 +load together with TF-A image, but RPI loader can load one file only. Solution
 +is to pack TF-A and OP-TEE into one image.
 +
-+Build TF-A with ``SPD=opted`` option and then attach OP-TEE image to TF-A:
++Build TF-A with ``SPD=opteed`` option and then attach OP-TEE image to TF-A:
 +
 +.. code:: shell
 +
@@ -137,5 +141,5 @@ index 81b7dedfb..c24e90de5 100644
  PLAT_BL_COMMON_SOURCES	+=	drivers/rpi3/rng/rpi3_rng.c		\
  				plat/rpi/common/rpi3_stack_protector.c
 -- 
-2.45.1
+2.25.1
 
